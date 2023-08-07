@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/agiledragon/gomonkey/v2"
 	"github.com/smartystreets/goconvey/convey"
+	"go-proxy/test"
 	"io"
 	"log"
 	"net/http"
@@ -104,8 +105,8 @@ func TestCheckProxiesConnSync(t *testing.T) {
 	convey.Convey("CheckProxiesConnSync", t, func() {
 		convey.Convey("Check several proxies.", func() {
 			proxies := []string{"http://192.168.0.1:8888", "http://192.168.0.2:8888", "http://192.168.0.3:8888"}
-			r1, e1 := mockHttpClientReturn(true)
-			r2, e2 := mockHttpClientReturn(false)
+			r1, e1 := test.MockHttpClientReturn(true, "")
+			r2, e2 := test.MockHttpClientReturn(false, "")
 			outputs := []gomonkey.OutputCell{
 				{Values: gomonkey.Params{r1, e1}, Times: 2},
 				{Values: gomonkey.Params{r2, e2}, Times: 1},
@@ -119,20 +120,13 @@ func TestCheckProxiesConnSync(t *testing.T) {
 	})
 }
 
-func mockHttpClientReturn(success bool) (*http.Response, error) {
-	if success {
-		return &http.Response{StatusCode: 200, Body: io.NopCloser(bytes.NewBufferString(""))}, nil
-	}
-	return nil, errors.New("mock http request failed")
-}
-
 func TestCheckProxiesConnAsync(t *testing.T) {
 	convey.Convey("CheckProxiesConnAsync", t, func() {
 
 		convey.Convey("Check several proxies async.", func() {
 			proxies := []string{"http://192.168.0.1:8888", "http://192.168.0.2:8888", "http://192.168.0.3:8888"}
-			r1, e1 := mockHttpClientReturn(true)
-			r2, e2 := mockHttpClientReturn(false)
+			r1, e1 := test.MockHttpClientReturn(true, "")
+			r2, e2 := test.MockHttpClientReturn(false, "")
 			outputs := []gomonkey.OutputCell{
 				{Values: gomonkey.Params{r1, e1}, Times: 2},
 				{Values: gomonkey.Params{r2, e2}, Times: 1},
