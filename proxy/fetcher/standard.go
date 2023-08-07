@@ -3,9 +3,9 @@ package fetcher
 import (
 	"errors"
 	"fmt"
-	"go-proxy/logger"
-	"go-proxy/logger/console"
-	"go-proxy/util"
+	"github.com/zx106kg/go-proxy/logger"
+	"github.com/zx106kg/go-proxy/logger/console"
+	"github.com/zx106kg/go-proxy/util"
 	"io"
 	"net/http"
 	"strconv"
