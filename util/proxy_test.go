@@ -5,7 +5,7 @@ import (
 	"errors"
 	"github.com/agiledragon/gomonkey/v2"
 	"github.com/smartystreets/goconvey/convey"
-	"go-proxy/test"
+	"github.com/zx106kg/go-proxy/test"
 	"io"
 	"log"
 	"net/http"

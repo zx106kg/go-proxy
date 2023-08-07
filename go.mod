@@ -1,4 +1,4 @@
-module go-proxy
+module github.com/zx106kg/go-proxy
 
 go 1.20
 
