@@ -1,4 +1,4 @@
-package fetcher
+package warehouse
 
 import (
 	"errors"
@@ -12,18 +12,18 @@ import (
 	"testing"
 )
 
-func TestStandardProxyFetcher_replaceNumPlaceholder(t *testing.T) {
+func TestWarehouse_replaceNumPlaceholder(t *testing.T) {
 	convey.Convey("replaceNumPlaceholder", t, func() {
 
 		convey.Convey("ApiUrl contains ${num}", func() {
-			replaced := NewStandardProxyFetcher(&StandardProxyFetcherConfig{
+			replaced := NewWarehouse(&CreateConfig{
 				Url: "http://localhost?qty=${num}&type=",
 			}).replaceNumPlaceholder(5)
 			convey.So(replaced, convey.ShouldEqual, "http://localhost?qty=5&type=")
 		})
 
 		convey.Convey("ApiUrl does not contain ${num}", func() {
-			replaced := NewStandardProxyFetcher(&StandardProxyFetcherConfig{
+			replaced := NewWarehouse(&CreateConfig{
 				Url: "http://localhost?qty=1&type=",
 			}).replaceNumPlaceholder(5)
 			convey.So(replaced, convey.ShouldEqual, "http://localhost?qty=1&type=")
@@ -32,9 +32,9 @@ func TestStandardProxyFetcher_replaceNumPlaceholder(t *testing.T) {
 	})
 }
 
-func TestStandardProxyFetcher_GetProxiesSync(t *testing.T) {
+func TestWarehouse_GetProxiesSync(t *testing.T) {
 	convey.Convey("GetProxiesSync", t, func() {
-		fetcher := NewStandardProxyFetcher(&StandardProxyFetcherConfig{
+		fetcher := NewWarehouse(&CreateConfig{
 			Url: "http://proxy-agent.com?qty=${num}",
 		})
 
@@ -69,9 +69,9 @@ func TestStandardProxyFetcher_GetProxiesSync(t *testing.T) {
 	})
 }
 
-func TestStandardProxyFetcher_GetCheckedProxiesSync(t *testing.T) {
+func TestWarehouse_GetCheckedProxiesSync(t *testing.T) {
 	convey.Convey("GetCheckedProxiesSync", t, func() {
-		fetcher := NewStandardProxyFetcher(&StandardProxyFetcherConfig{
+		fetcher := NewWarehouse(&CreateConfig{
 			Url: "http://proxy-agent.com?qty=${num}",
 		})
 
@@ -105,9 +105,9 @@ func TestStandardProxyFetcher_GetCheckedProxiesSync(t *testing.T) {
 	})
 }
 
-func TestStandardProxyFetcher_GetProxy(t *testing.T) {
+func TestWarehouse_GetProxy(t *testing.T) {
 	convey.Convey("GetProxy", t, func() {
-		fetcher := NewStandardProxyFetcher(&StandardProxyFetcherConfig{
+		fetcher := NewWarehouse(&CreateConfig{
 			Url: "http://proxy-agent.com?qty=${num}",
 		})
 
@@ -129,9 +129,9 @@ func TestStandardProxyFetcher_GetProxy(t *testing.T) {
 	})
 }
 
-func TestStandardProxyFetcher_GetCheckedProxiesAsync(t *testing.T) {
+func TestWarehouse_GetCheckedProxiesAsync(t *testing.T) {
 	convey.Convey("GetCheckedProxiesAsync", t, func() {
-		fetcher := NewStandardProxyFetcher(&StandardProxyFetcherConfig{
+		fetcher := NewWarehouse(&CreateConfig{
 			Url: "http://proxy-agent.com?qty=${num}",
 		})
 
@@ -192,9 +192,9 @@ func TestStandardProxyFetcher_GetCheckedProxiesAsync(t *testing.T) {
 	})
 }
 
-func TestStandardProxyFetcher_GetProxiesAsync(t *testing.T) {
+func TestWarehouse_GetProxiesAsync(t *testing.T) {
 	convey.Convey("GetProxiesAsync", t, func() {
-		fetcher := NewStandardProxyFetcher(&StandardProxyFetcherConfig{
+		fetcher := NewWarehouse(&CreateConfig{
 			Url: "http://proxy-agent.com?qty=${num}",
 		})
 

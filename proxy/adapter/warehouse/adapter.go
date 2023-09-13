@@ -1,4 +1,4 @@
-package fetcher
+package warehouse
 
 import (
 	"errors"
@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-type StandardProxyFetcher struct {
+type Warehouse struct {
 	url      string
 	username string
 	password string
@@ -23,7 +23,7 @@ type StandardProxyFetcher struct {
 	client   *http.Client
 }
 
-type StandardProxyFetcherConfig struct {
+type CreateConfig struct {
 	Url      string
 	Username string
 	Password string
@@ -31,8 +31,8 @@ type StandardProxyFetcherConfig struct {
 	Logger   logger.Logger
 }
 
-// NewStandardProxyFetcher 创建StandardProxyFetcher
-func NewStandardProxyFetcher(config *StandardProxyFetcherConfig) *StandardProxyFetcher {
+// NewWarehouse 创建StandardProxyFetcher
+func NewWarehouse(config *CreateConfig) *Warehouse {
 	splitter := config.Splitter
 	if splitter == "" {
 		splitter = "\r\n"
@@ -41,7 +41,7 @@ func NewStandardProxyFetcher(config *StandardProxyFetcherConfig) *StandardProxyF
 	if log == nil {
 		log = console.NewLogger()
 	}
-	return &StandardProxyFetcher{
+	return &Warehouse{
 		url:      config.Url,
 		username: config.Username,
 		password: config.Password,
@@ -52,7 +52,7 @@ func NewStandardProxyFetcher(config *StandardProxyFetcherConfig) *StandardProxyF
 }
 
 // GetProxy 获取一个代理
-func (f *StandardProxyFetcher) GetProxy(exitWhenError bool) (proxy string, err error) {
+func (f *Warehouse) GetProxy(exitWhenError bool) (proxy string, err error) {
 	proxies, err := f.GetProxiesSync(1, exitWhenError)
 	if err != nil {
 		return "", err
@@ -65,7 +65,7 @@ func (f *StandardProxyFetcher) GetProxy(exitWhenError bool) (proxy string, err e
 // count 获取数量
 //
 // exitWhenError 当调用api失败时是否立刻结束
-func (f *StandardProxyFetcher) GetProxiesSync(count int, exitWhenError bool) (proxies []string, err error) {
+func (f *Warehouse) GetProxiesSync(count int, exitWhenError bool) (proxies []string, err error) {
 	for {
 		if len(proxies) >= count {
 			break
@@ -97,7 +97,7 @@ func (f *StandardProxyFetcher) GetProxiesSync(count int, exitWhenError bool) (pr
 }
 
 // GetCheckedProxiesSync 同步批量获取已检查的代理
-func (f *StandardProxyFetcher) GetCheckedProxiesSync(count int, exitWhenError bool) (proxies []string, err error) {
+func (f *Warehouse) GetCheckedProxiesSync(count int, exitWhenError bool) (proxies []string, err error) {
 	for {
 		tProxies, err := f.GetProxiesSync(count, exitWhenError)
 		if err != nil {
@@ -116,7 +116,7 @@ func (f *StandardProxyFetcher) GetCheckedProxiesSync(count int, exitWhenError bo
 // chProxy 成功的代理通过此channel返回
 //
 // chErr 异常通过此channel返回
-func (f *StandardProxyFetcher) GetProxiesAsync(count int, exitWhenError bool) (chProxy chan string, chErr chan error) {
+func (f *Warehouse) GetProxiesAsync(count int, exitWhenError bool) (chProxy chan string, chErr chan error) {
 	chProxy = make(chan string)
 	chErr = make(chan error)
 
@@ -165,7 +165,7 @@ func (f *StandardProxyFetcher) GetProxiesAsync(count int, exitWhenError bool) (c
 // chProxy 成功的代理通过此channel返回
 //
 // chErr 异常通过此channel返回
-func (f *StandardProxyFetcher) GetCheckedProxiesAsync(count int, exitWhenError bool) (chProxy chan string, chErr chan error) {
+func (f *Warehouse) GetCheckedProxiesAsync(count int, exitWhenError bool) (chProxy chan string, chErr chan error) {
 	chProxy = make(chan string)
 	chErr = make(chan error)
 
@@ -217,7 +217,7 @@ func (f *StandardProxyFetcher) GetCheckedProxiesAsync(count int, exitWhenError b
 }
 
 // replaceNumPlaceholder 使用count替换配置url中的占位符${num}, 生成实际的代理获取url
-func (f *StandardProxyFetcher) replaceNumPlaceholder(count int) string {
+func (f *Warehouse) replaceNumPlaceholder(count int) string {
 	if !strings.Contains(f.url, `${num}`) {
 		return f.url
 	}
@@ -225,7 +225,7 @@ func (f *StandardProxyFetcher) replaceNumPlaceholder(count int) string {
 }
 
 // callApi
-func (f *StandardProxyFetcher) callApi(apiUrl string) (body string, err error) {
+func (f *Warehouse) callApi(apiUrl string) (body string, err error) {
 	req, _ := http.NewRequest("GET", apiUrl, nil)
 	resp, err := f.client.Do(req)
 	if err != nil {

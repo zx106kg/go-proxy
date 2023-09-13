@@ -1,6 +1,6 @@
-package fetcher
+package adapter
 
-type ProxyFetcher interface {
+type ProxyVendorAdapter interface {
 	GetProxy(exitWhenError bool) (proxy string, err error)
 	GetProxiesSync(count int, exitWhenError bool) (proxies []string, err error)
 	GetCheckedProxiesSync(count int, exitWhenError bool) (proxies []string, err error)
