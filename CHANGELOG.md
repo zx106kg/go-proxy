@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.3.0](https://ghproxy.com///compare/v1.2.0...v1.3.0) (2023-09-13)
+
+
+### Features
+
+* 新增部分功能 ([f16f881](https://ghproxy.com///commit/f16f881f95612c3dabf5a7617e24fb2740b2c798))
+
 ## [1.2.0](https://ghproxy.com///compare/v1.1.0...v1.2.0) (2023-08-07)
 
 
