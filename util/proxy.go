@@ -1,6 +1,7 @@
 package util
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net"
@@ -15,7 +16,7 @@ import (
 // CheckProxyConn 检查代理连通性
 //
 // proxy必须完整带有scheme
-func CheckProxyConn(proxy string) (ok bool, err error) {
+func CheckProxyConn(ctx context.Context, proxy string) (ok bool, err error) {
 	urlProxy, err := url.Parse(proxy)
 	if err != nil {
 		return false, fmt.Errorf("代理字符串格式错误. %+v", err)
@@ -27,6 +28,9 @@ func CheckProxyConn(proxy string) (ok bool, err error) {
 		Timeout: 3 * time.Second,
 	}
 	req, err := http.NewRequest("GET", "http://www.baidu.com", nil)
+	if ctx != nil {
+		req = req.WithContext(ctx)
+	}
 	if err != nil {
 		return false, err
 	}
@@ -101,11 +105,11 @@ func FormatRawProxy(proxy string, usr string, pwd string) (formatted string, err
 // CheckProxiesConnSync 批量检查代理连通性, 同步返回结果
 //
 // succ为测试成功的代理组, fail为测试失败的代理组.
-func CheckProxiesConnSync(proxies []string) (succ, fail []string) {
+func CheckProxiesConnSync(ctx context.Context, proxies []string) (succ, fail []string) {
 	c := sync.NewCond(&sync.Mutex{})
 	for _, proxy := range proxies {
 		go func(proxy string) {
-			ok, _ := CheckProxyConn(proxy)
+			ok, _ := CheckProxyConn(ctx, proxy)
 			c.L.Lock()
 			if ok {
 				succ = append(succ, proxy)
@@ -127,12 +131,12 @@ func CheckProxiesConnSync(proxies []string) (succ, fail []string) {
 // CheckProxiesConnAsync 异步批量检查代理连通性
 //
 // 检查完成时, 立刻通过ch返回结果
-func CheckProxiesConnAsync(proxies []string, ch chan *CheckProxyConnAsyncResult) {
+func CheckProxiesConnAsync(ctx context.Context, proxies []string, ch chan *CheckProxyConnAsyncResult) {
 	c := sync.NewCond(&sync.Mutex{})
 	total := len(proxies)
 	for _, proxy := range proxies {
 		go func(proxy string) {
-			ok, _ := CheckProxyConn(proxy)
+			ok, _ := CheckProxyConn(ctx, proxy)
 			c.L.Lock()
 			total--
 			c.L.Unlock()

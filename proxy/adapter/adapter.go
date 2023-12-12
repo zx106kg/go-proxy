@@ -1,9 +1,11 @@
 package adapter
 
+import "context"
+
 type ProxyVendorAdapter interface {
-	GetProxy(exitWhenError bool) (proxy string, err error)
-	GetProxiesSync(count int, exitWhenError bool) (proxies []string, err error)
-	GetCheckedProxiesSync(count int, exitWhenError bool) (proxies []string, err error)
-	GetProxiesAsync(count int, exitWhenError bool) (chProxy chan string, chErr chan error)
-	GetCheckedProxiesAsync(count int, exitWhenError bool) (chProxy chan string, chErr chan error)
+	GetProxy(ctx context.Context, exitWhenError bool) (proxy string, err error)
+	GetProxiesSync(ctx context.Context, count int, exitWhenError bool) (proxies []string, err error)
+	GetCheckedProxiesSync(ctx context.Context, count int, exitWhenError bool) (proxies []string, err error)
+	GetProxiesAsync(ctx context.Context, count int, exitWhenError bool) (chProxy chan string, chErr chan error)
+	GetCheckedProxiesAsync(ctx context.Context, count int, exitWhenError bool) (chProxy chan string, chErr chan error)
 }

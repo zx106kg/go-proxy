@@ -1,6 +1,7 @@
 package warehouse
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"github.com/zx106kg/go-proxy/logger"
@@ -52,8 +53,8 @@ func NewWarehouse(config *CreateConfig) *Warehouse {
 }
 
 // GetProxy 获取一个代理
-func (f *Warehouse) GetProxy(exitWhenError bool) (proxy string, err error) {
-	proxies, err := f.GetProxiesSync(1, exitWhenError)
+func (f *Warehouse) GetProxy(ctx context.Context, exitWhenError bool) (proxy string, err error) {
+	proxies, err := f.GetProxiesSync(ctx, 1, exitWhenError)
 	if err != nil {
 		return "", err
 	}
@@ -65,17 +66,20 @@ func (f *Warehouse) GetProxy(exitWhenError bool) (proxy string, err error) {
 // count 获取数量
 //
 // exitWhenError 当调用api失败时是否立刻结束
-func (f *Warehouse) GetProxiesSync(count int, exitWhenError bool) (proxies []string, err error) {
+func (f *Warehouse) GetProxiesSync(ctx context.Context, count int, exitWhenError bool) (proxies []string, err error) {
 	for {
 		if len(proxies) >= count {
 			break
 		}
 		// 获取匹配获取数量的url
 		apiUrl := f.replaceNumPlaceholder(count - len(proxies))
-		body, err := f.callApi(apiUrl)
+		body, err := f.callApi(ctx, apiUrl)
 		if err != nil {
 			if f.logger != nil {
 				f.logger.Warn(fmt.Sprintf("[GetProxiesSync] 调用代理供应商API失败. %v", err))
+			}
+			if ctx != nil && ctx.Err() == context.Canceled {
+				return nil, err
 			}
 			if exitWhenError {
 				return nil, err
@@ -98,13 +102,13 @@ func (f *Warehouse) GetProxiesSync(count int, exitWhenError bool) (proxies []str
 }
 
 // GetCheckedProxiesSync 同步批量获取已检查的代理
-func (f *Warehouse) GetCheckedProxiesSync(count int, exitWhenError bool) (proxies []string, err error) {
+func (f *Warehouse) GetCheckedProxiesSync(ctx context.Context, count int, exitWhenError bool) (proxies []string, err error) {
 	for {
-		tProxies, err := f.GetProxiesSync(count, exitWhenError)
+		tProxies, err := f.GetProxiesSync(ctx, count, exitWhenError)
 		if err != nil {
 			return nil, err
 		}
-		succ, _ := util.CheckProxiesConnSync(tProxies)
+		succ, _ := util.CheckProxiesConnSync(ctx, tProxies)
 		proxies = append(proxies, succ...)
 		if len(proxies) >= count {
 			return proxies, nil
@@ -117,7 +121,7 @@ func (f *Warehouse) GetCheckedProxiesSync(count int, exitWhenError bool) (proxie
 // chProxy 成功的代理通过此channel返回
 //
 // chErr 异常通过此channel返回
-func (f *Warehouse) GetProxiesAsync(count int, exitWhenError bool) (chProxy chan string, chErr chan error) {
+func (f *Warehouse) GetProxiesAsync(ctx context.Context, count int, exitWhenError bool) (chProxy chan string, chErr chan error) {
 	chProxy = make(chan string)
 	chErr = make(chan error)
 
@@ -130,7 +134,7 @@ func (f *Warehouse) GetProxiesAsync(count int, exitWhenError bool) (chProxy chan
 			}
 			// 获取匹配获取数量的url
 			apiUrl := f.replaceNumPlaceholder(count - int(current.Load()))
-			body, err := f.callApi(apiUrl)
+			body, err := f.callApi(ctx, apiUrl)
 			if err != nil {
 				if f.logger != nil {
 					f.logger.Warn(fmt.Sprintf("[GetProxiesSync] 调用代理供应商API失败. %v", err))
@@ -167,7 +171,7 @@ func (f *Warehouse) GetProxiesAsync(count int, exitWhenError bool) (chProxy chan
 // chProxy 成功的代理通过此channel返回
 //
 // chErr 异常通过此channel返回
-func (f *Warehouse) GetCheckedProxiesAsync(count int, exitWhenError bool) (chProxy chan string, chErr chan error) {
+func (f *Warehouse) GetCheckedProxiesAsync(ctx context.Context, count int, exitWhenError bool) (chProxy chan string, chErr chan error) {
 	chProxy = make(chan string)
 	chErr = make(chan error)
 
@@ -180,7 +184,7 @@ func (f *Warehouse) GetCheckedProxiesAsync(count int, exitWhenError bool) (chPro
 			}
 			// 获取匹配获取数量的url
 			apiUrl := f.replaceNumPlaceholder(count - int(current.Load()))
-			body, err := f.callApi(apiUrl)
+			body, err := f.callApi(ctx, apiUrl)
 			if err != nil {
 				if f.logger != nil {
 					f.logger.Warn(fmt.Sprintf("[GetProxiesSync] 调用代理供应商API失败. %v", err))
@@ -203,7 +207,7 @@ func (f *Warehouse) GetCheckedProxiesAsync(count int, exitWhenError bool) (chPro
 			proxies := util.GetProxyFromBody(body, f.splitter)
 			proxies = f.formatRawProxies(proxies)
 			chResult := make(chan *util.CheckProxyConnAsyncResult)
-			util.CheckProxiesConnAsync(proxies, chResult)
+			util.CheckProxiesConnAsync(ctx, proxies, chResult)
 			var tcount int
 			for tcount < len(proxies) {
 				r := <-chResult
@@ -239,8 +243,11 @@ func (f *Warehouse) formatRawProxies(proxies []string) []string {
 }
 
 // callApi
-func (f *Warehouse) callApi(apiUrl string) (body string, err error) {
+func (f *Warehouse) callApi(ctx context.Context, apiUrl string) (body string, err error) {
 	req, _ := http.NewRequest("GET", apiUrl, nil)
+	if ctx != nil {
+		req = req.WithContext(ctx)
+	}
 	resp, err := f.client.Do(req)
 	if err != nil {
 		return "", err

@@ -2,6 +2,7 @@ package util
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"github.com/agiledragon/gomonkey/v2"
 	"github.com/smartystreets/goconvey/convey"
@@ -22,7 +23,7 @@ func TestCheckProxyConn(t *testing.T) {
 				return nil, errors.New("mock http request failed")
 			})
 			defer patches.Reset()
-			ok, err := CheckProxyConn("http://127.0.0.1:8080")
+			ok, err := CheckProxyConn(context.TODO(), "http://127.0.0.1:8080")
 			convey.So(ok, convey.ShouldBeFalse)
 			convey.So(err, convey.ShouldBeError)
 		})
@@ -33,7 +34,7 @@ func TestCheckProxyConn(t *testing.T) {
 				return &http.Response{StatusCode: 200, Body: io.NopCloser(bytes.NewBufferString(""))}, nil
 			})
 			defer patches.Reset()
-			ok, err := CheckProxyConn("http://127.0.0.1:8080")
+			ok, err := CheckProxyConn(context.TODO(), "http://127.0.0.1:8080")
 			convey.So(ok, convey.ShouldBeTrue)
 			convey.So(err, convey.ShouldBeNil)
 		})
@@ -113,7 +114,7 @@ func TestCheckProxiesConnSync(t *testing.T) {
 			}
 			patches := gomonkey.ApplyMethodSeq(reflect.TypeOf(&http.Client{}), "Do", outputs)
 			defer patches.Reset()
-			succ, fail := CheckProxiesConnSync(proxies)
+			succ, fail := CheckProxiesConnSync(context.TODO(), proxies)
 			convey.So(len(succ), convey.ShouldEqual, 2)
 			convey.So(len(fail), convey.ShouldEqual, 1)
 		})
@@ -134,7 +135,7 @@ func TestCheckProxiesConnAsync(t *testing.T) {
 			patches := gomonkey.ApplyMethodSeq(reflect.TypeOf(&http.Client{}), "Do", outputs)
 			defer patches.Reset()
 			ch := make(chan *CheckProxyConnAsyncResult)
-			CheckProxiesConnAsync(proxies, ch)
+			CheckProxiesConnAsync(context.TODO(), proxies, ch)
 			var results []*CheckProxyConnAsyncResult
 			for {
 				result := <-ch

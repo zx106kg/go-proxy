@@ -1,6 +1,7 @@
 package warehouse
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"github.com/agiledragon/gomonkey/v2"
@@ -44,7 +45,7 @@ func TestWarehouse_GetProxiesSync(t *testing.T) {
 			})
 			defer patch.Reset()
 
-			proxies, err := fetcher.GetProxiesSync(2, true)
+			proxies, err := fetcher.GetProxiesSync(context.TODO(), 2, true)
 			convey.So(proxies, convey.ShouldBeNil)
 			convey.So(err, convey.ShouldBeError)
 		})
@@ -60,12 +61,11 @@ func TestWarehouse_GetProxiesSync(t *testing.T) {
 			}
 			patches := gomonkey.ApplyMethodSeq(reflect.TypeOf(&http.Client{}), "Do", outputs)
 			defer patches.Reset()
-			proxies, err := fetcher.GetProxiesSync(2, false)
+			proxies, err := fetcher.GetProxiesSync(context.TODO(), 2, false)
 			convey.So(len(proxies), convey.ShouldEqual, 3)
 			convey.So(err, convey.ShouldBeNil)
 
 		})
-
 	})
 }
 
@@ -78,7 +78,7 @@ func TestWarehouse_GetCheckedProxiesSync(t *testing.T) {
 		convey.Convey("Exit when error occurs", func() {
 			patch := gomonkey.ApplyMethodReturn(fetcher, "GetProxiesSync", nil, errors.New(""))
 			defer patch.Reset()
-			proxies, err := fetcher.GetCheckedProxiesSync(2, true)
+			proxies, err := fetcher.GetCheckedProxiesSync(context.TODO(), 2, true)
 			convey.So(proxies, convey.ShouldBeNil)
 			convey.So(err, convey.ShouldBeError)
 		})
@@ -97,7 +97,7 @@ func TestWarehouse_GetCheckedProxiesSync(t *testing.T) {
 			patches2 := gomonkey.ApplyFuncSeq(util.CheckProxyConn, outputs2)
 			defer patches1.Reset()
 			defer patches2.Reset()
-			proxies, err := fetcher.GetCheckedProxiesSync(2, false)
+			proxies, err := fetcher.GetCheckedProxiesSync(context.TODO(), 2, false)
 			convey.So(len(proxies), convey.ShouldEqual, 2)
 			convey.So(err, convey.ShouldBeNil)
 
@@ -114,7 +114,7 @@ func TestWarehouse_GetProxy(t *testing.T) {
 		convey.Convey("Exit when error occurs", func() {
 			patch := gomonkey.ApplyMethodReturn(fetcher, "GetProxiesSync", nil, errors.New(""))
 			defer patch.Reset()
-			proxy, err := fetcher.GetProxy(true)
+			proxy, err := fetcher.GetProxy(context.TODO(), true)
 			convey.So(proxy, convey.ShouldBeEmpty)
 			convey.So(err, convey.ShouldBeError)
 		})
@@ -122,7 +122,7 @@ func TestWarehouse_GetProxy(t *testing.T) {
 		convey.Convey("Successfully get a proxy", func() {
 			patch := gomonkey.ApplyMethodReturn(fetcher, "GetProxiesSync", []string{"http://192.168.0.1"}, nil)
 			defer patch.Reset()
-			proxy, err := fetcher.GetProxy(true)
+			proxy, err := fetcher.GetProxy(context.TODO(), true)
 			convey.So(proxy, convey.ShouldEqual, "http://192.168.0.1")
 			convey.So(err, convey.ShouldBeNil)
 		})
@@ -136,24 +136,24 @@ func TestWarehouse_GetCheckedProxiesAsync(t *testing.T) {
 		})
 
 		convey.Convey("Exit when error occurs", func() {
-			patch := gomonkey.ApplyPrivateMethod(fetcher, "callApi", func(apiUrl string) (body string, err error) {
+			patch := gomonkey.ApplyPrivateMethod(fetcher, "callApi", func(ctx context.Context, apiUrl string) (body string, err error) {
 				return "", errors.New("")
 			})
 			defer patch.Reset()
-			_, chErr := fetcher.GetCheckedProxiesAsync(10, true)
+			_, chErr := fetcher.GetCheckedProxiesAsync(context.TODO(), 10, true)
 			err := <-chErr
 			convey.So(err, convey.ShouldBeError)
 		})
 
 		convey.Convey("Get 2 proxies, one of them is invalid, then retry.", func() {
 			var t int
-			pCallApi := gomonkey.ApplyPrivateMethod(fetcher, "callApi", func(apiUrl string) (body string, err error) {
+			pCallApi := gomonkey.ApplyPrivateMethod(fetcher, "callApi", func(ctx context.Context, apiUrl string) (body string, err error) {
 				t++
 				return fmt.Sprintf("192.168.50.%d:8888", t), nil
 			})
 			defer pCallApi.Reset()
 
-			pConn := gomonkey.ApplyFunc(util.CheckProxyConn, func(proxy string) (ok bool, err error) {
+			pConn := gomonkey.ApplyFunc(util.CheckProxyConn, func(ctx context.Context, proxy string) (ok bool, err error) {
 				switch proxy {
 				case "http://192.168.50.1:8888":
 					ok = true
@@ -167,7 +167,7 @@ func TestWarehouse_GetCheckedProxiesAsync(t *testing.T) {
 			defer pConn.Reset()
 
 			var proxies []string
-			chProxy, chErr := fetcher.GetCheckedProxiesAsync(2, false)
+			chProxy, chErr := fetcher.GetCheckedProxiesAsync(context.TODO(), 2, false)
 			var done bool
 			for {
 				select {
@@ -199,18 +199,18 @@ func TestWarehouse_GetProxiesAsync(t *testing.T) {
 		})
 
 		convey.Convey("Exit when error occurs", func() {
-			patch := gomonkey.ApplyPrivateMethod(fetcher, "callApi", func(apiUrl string) (body string, err error) {
+			patch := gomonkey.ApplyPrivateMethod(fetcher, "callApi", func(ctx context.Context, apiUrl string) (body string, err error) {
 				return "", errors.New("")
 			})
 			defer patch.Reset()
-			_, chErr := fetcher.GetCheckedProxiesAsync(10, true)
+			_, chErr := fetcher.GetCheckedProxiesAsync(context.TODO(), 10, true)
 			err := <-chErr
 			convey.So(err, convey.ShouldBeError)
 		})
 
 		convey.Convey("Get 3 proxies in 2 times.", func() {
 			var t int
-			pCallApi := gomonkey.ApplyPrivateMethod(fetcher, "callApi", func(apiUrl string) (body string, err error) {
+			pCallApi := gomonkey.ApplyPrivateMethod(fetcher, "callApi", func(ctx context.Context, apiUrl string) (body string, err error) {
 				if t == 0 {
 					body = "192.168.50.1:8888\r\n192.168.50.2:8888"
 				} else if t == 1 {
@@ -221,7 +221,7 @@ func TestWarehouse_GetProxiesAsync(t *testing.T) {
 			})
 			defer pCallApi.Reset()
 
-			pConn := gomonkey.ApplyFunc(util.CheckProxyConn, func(proxy string) (ok bool, err error) {
+			pConn := gomonkey.ApplyFunc(util.CheckProxyConn, func(ctx context.Context, proxy string) (ok bool, err error) {
 				switch proxy {
 				case "192.168.50.1:8888":
 					ok = true
@@ -235,7 +235,7 @@ func TestWarehouse_GetProxiesAsync(t *testing.T) {
 			defer pConn.Reset()
 
 			var proxies []string
-			chProxy, chErr := fetcher.GetProxiesAsync(3, false)
+			chProxy, chErr := fetcher.GetProxiesAsync(context.TODO(), 3, false)
 			var done bool
 			for {
 				select {

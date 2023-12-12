@@ -1,5 +1,7 @@
 package tunnel
 
+import "context"
+
 type Tunnel struct {
 	url string
 }
@@ -14,22 +16,22 @@ func NewTunnel(config *CreateConfig) *Tunnel {
 	}
 }
 
-func (t *Tunnel) GetProxy(_ bool) (proxy string, err error) {
+func (t *Tunnel) GetProxy(ctx context.Context, _ bool) (proxy string, err error) {
 	return t.url, nil
 }
 
-func (t *Tunnel) GetProxiesSync(count int, _ bool) (proxies []string, err error) {
+func (t *Tunnel) GetProxiesSync(ctx context.Context, count int, _ bool) (proxies []string, err error) {
 	for i := 0; i < count; i++ {
 		proxies = append(proxies, t.url)
 	}
 	return proxies, nil
 }
 
-func (t *Tunnel) GetCheckedProxiesSync(count int, exitWhenError bool) (proxies []string, err error) {
-	return t.GetProxiesSync(count, exitWhenError)
+func (t *Tunnel) GetCheckedProxiesSync(ctx context.Context, count int, exitWhenError bool) (proxies []string, err error) {
+	return t.GetProxiesSync(ctx, count, exitWhenError)
 }
 
-func (t *Tunnel) GetProxiesAsync(count int, _ bool) (chProxy chan string, chErr chan error) {
+func (t *Tunnel) GetProxiesAsync(ctx context.Context, count int, _ bool) (chProxy chan string, chErr chan error) {
 	chProxy = make(chan string)
 	chErr = make(chan error)
 	go func() {
@@ -41,6 +43,6 @@ func (t *Tunnel) GetProxiesAsync(count int, _ bool) (chProxy chan string, chErr 
 	return chProxy, chErr
 }
 
-func (t *Tunnel) GetCheckedProxiesAsync(count int, exitWhenError bool) (chProxy chan string, chErr chan error) {
-	return t.GetProxiesAsync(count, exitWhenError)
+func (t *Tunnel) GetCheckedProxiesAsync(ctx context.Context, count int, exitWhenError bool) (chProxy chan string, chErr chan error) {
+	return t.GetProxiesAsync(ctx, count, exitWhenError)
 }
