@@ -91,6 +91,7 @@ func (f *Warehouse) GetProxiesSync(count int, exitWhenError bool) (proxies []str
 			continue
 		}
 		tProxies := util.GetProxyFromBody(body, f.splitter)
+		tProxies = f.formatRawProxies(tProxies)
 		proxies = append(proxies, tProxies...)
 	}
 	return proxies, nil
@@ -150,6 +151,7 @@ func (f *Warehouse) GetProxiesAsync(count int, exitWhenError bool) (chProxy chan
 				continue
 			}
 			proxies := util.GetProxyFromBody(body, f.splitter)
+			proxies = f.formatRawProxies(proxies)
 			for _, proxy := range proxies {
 				chProxy <- proxy
 				current.Add(1)
@@ -199,6 +201,7 @@ func (f *Warehouse) GetCheckedProxiesAsync(count int, exitWhenError bool) (chPro
 				continue
 			}
 			proxies := util.GetProxyFromBody(body, f.splitter)
+			proxies = f.formatRawProxies(proxies)
 			chResult := make(chan *util.CheckProxyConnAsyncResult)
 			util.CheckProxiesConnAsync(proxies, chResult)
 			var tcount int
@@ -222,6 +225,17 @@ func (f *Warehouse) replaceNumPlaceholder(count int) string {
 		return f.url
 	}
 	return strings.ReplaceAll(f.url, `${num}`, strconv.Itoa(count))
+}
+
+// formatRawProxies 格式化原始代理
+func (f *Warehouse) formatRawProxies(proxies []string) []string {
+	var arr []string
+	for _, proxy := range proxies {
+		if p, err := util.FormatRawProxy(proxy, f.username, f.password); err == nil {
+			arr = append(arr, p)
+		}
+	}
+	return arr
 }
 
 // callApi

@@ -155,11 +155,11 @@ func TestWarehouse_GetCheckedProxiesAsync(t *testing.T) {
 
 			pConn := gomonkey.ApplyFunc(util.CheckProxyConn, func(proxy string) (ok bool, err error) {
 				switch proxy {
-				case "192.168.50.1:8888":
+				case "http://192.168.50.1:8888":
 					ok = true
-				case "192.168.50.2:8888":
+				case "http://192.168.50.2:8888":
 					ok = false
-				case "192.168.50.3:8888":
+				case "http://192.168.50.3:8888":
 					ok = true
 				}
 				return ok, nil
@@ -186,8 +186,8 @@ func TestWarehouse_GetCheckedProxiesAsync(t *testing.T) {
 				}
 			}
 			convey.So(len(proxies), convey.ShouldBeGreaterThanOrEqualTo, 2)
-			convey.So(proxies, convey.ShouldContain, "192.168.50.1:8888")
-			convey.So(proxies, convey.ShouldContain, "192.168.50.3:8888")
+			convey.So(proxies, convey.ShouldContain, "http://192.168.50.1:8888")
+			convey.So(proxies, convey.ShouldContain, "http://192.168.50.3:8888")
 		})
 	})
 }
