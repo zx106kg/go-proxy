@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.4.0](https://ghproxy.com///compare/v1.3.0...v1.4.0) (2023-12-12)
+
+
+### Features
+
+* 增加原始代理格式化 ([7c544fb](https://ghproxy.com///commit/7c544fbfc16e314a41d85eda3fb29bac3d620e9e))
+
 ## [1.3.0](https://ghproxy.com///compare/v1.2.0...v1.3.0) (2023-09-13)
 
 
