@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.5.0](https://github.com/zx106kg/go-proxy/compare/v1.4.0...v1.5.0) (2023-12-12)
+
+
+### Features
+
+* 方法增加context ([d723a14](https://github.com/zx106kg/go-proxy/commit/d723a1491297a363f1fab86c10e434ec70e418b6))
+
 ## [1.4.0](https://ghproxy.com///compare/v1.3.0...v1.4.0) (2023-12-12)
 
 
